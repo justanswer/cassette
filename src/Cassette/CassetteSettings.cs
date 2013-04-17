@@ -19,9 +19,7 @@ namespace Cassette
         }
 
         internal CassetteSettings() // Tests don't usually need to specify configurations, so give them a default constructor to use.
-            : this(Enumerable.Empty<IConfiguration<CassetteSettings>>())
-        {
-        }
+            : this(Enumerable.Empty<IConfiguration<CassetteSettings>>()) { PerformCompression = true; }
 
         void ApplyConfigurations(IEnumerable<IConfiguration<CassetteSettings>> configurations)
         {
@@ -55,5 +53,13 @@ namespace Cassette
         public string Version { get; set; }
 
         public bool IsFileSystemWatchingEnabled { get; set; }
+
+        /// <summary>
+        /// Whether cassette should compress files;
+        /// Default is True, but Cassette native 
+        /// compression my conflict with IIS compression
+        /// and/or compression performed by CDNs such as Akamai
+        /// </summary>
+        public bool PerformCompression { get; set; }
     }
 }

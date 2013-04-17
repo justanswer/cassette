@@ -51,6 +51,8 @@ namespace Cassette
             }
         }
 
+        public bool PerformCompression { get; set; }
+
         /// <summary>
         /// The type that implements <see cref="IUrlModifier"/>.
         /// </summary>

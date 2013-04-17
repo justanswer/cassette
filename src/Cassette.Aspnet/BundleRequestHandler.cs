@@ -17,10 +17,12 @@ namespace Cassette.Aspnet
         readonly HttpResponseBase response;
         readonly HttpRequestBase request;
         readonly HttpContextBase httpContext;
+        private readonly CassetteSettings settings;
 
-        public BundleRequestHandler(BundleCollection bundles, RequestContext requestContext)
+        public BundleRequestHandler(CassetteSettings settings, BundleCollection bundles, RequestContext requestContext)
         {
             this.bundles = bundles;
+            this.settings = settings;
 
             response = requestContext.HttpContext.Response;
             request = requestContext.HttpContext.Request;
@@ -109,8 +111,12 @@ namespace Cassette.Aspnet
             var preferredEncoding = ParsePreferredEncoding(acceptEncoding);
             if (preferredEncoding == null) return stream;
 
-            response.AppendHeader("Content-Encoding", preferredEncoding);
             response.AppendHeader("Vary", "Accept-Encoding");
+            if (!settings.PerformCompression)
+            {
+                return stream;
+            }
+            response.AppendHeader("Content-Encoding", preferredEncoding);
             if (preferredEncoding == "deflate")
             {
                 return new DeflateStream(stream, CompressionMode.Compress, true);

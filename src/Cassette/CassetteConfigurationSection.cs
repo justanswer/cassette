@@ -31,5 +31,12 @@ namespace Cassette
             get { return (string)this["cacheDirectory"]; }
             set { this["cacheDirectory"] = value; }
         }
+
+        [ConfigurationProperty("performCompression", DefaultValue = true)]
+        public bool? PerformCompression
+        {
+            get { return (bool)this["performCompression"]; }
+            set { this["performCompression"] = value; }
+        }
     }
 }

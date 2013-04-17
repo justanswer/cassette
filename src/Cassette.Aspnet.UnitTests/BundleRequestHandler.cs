@@ -49,15 +49,16 @@ namespace Cassette.Aspnet
             bundles = new BundleCollection(settings, Mock.Of<IFileSearchProvider>(), Mock.Of<IBundleFactoryProvider>());
         }
 
-        internal BundleRequestHandler<TestableBundle> CreateRequestHandler()
+        internal BundleRequestHandler<TestableBundle> CreateRequestHandler(CassetteSettings settings = null)
         {
             return new BundleRequestHandler<TestableBundle>(
+                settings ?? new CassetteSettings(),
                 bundles,
                 requestContext
             );
         }
 
-        protected void SetupTestBundle()
+        protected void SetupTestBundle(CassetteSettings settings = null)
         {
             var bundle = new TestableBundle("~/test");
             var asset = new StubAsset("~/asset.js", "asset-content");
@@ -65,7 +66,7 @@ namespace Cassette.Aspnet
             bundle.Hash = new byte[] { 1, 2, 3 };
             bundles.Add(bundle);
             bundles.BuildReferences();
-            bundle.Process(new CassetteSettings());
+            bundle.Process(settings ?? new CassetteSettings());
         }
 
         void IDisposable.Dispose()
@@ -205,7 +206,7 @@ namespace Cassette.Aspnet
             requestHeaders.Add("Accept-Encoding", "deflate");
             response.SetupGet(r => r.Filter).Returns(Stream.Null);
 
-            SetupTestBundle();
+            SetupTestBundle(new CassetteSettings() { PerformCompression = true });
 
             var handler = CreateRequestHandler();
             handler.ProcessRequest("~/test");
@@ -247,6 +248,39 @@ namespace Cassette.Aspnet
         public void ResponseFilterIsGZipStream()
         {
             response.VerifySet(r => r.Filter = It.IsAny<GZipStream>());
+        }
+
+        [Fact]
+        public void ContentEncodingHeaderIsGzip()
+        {
+            response.Verify(r => r.AppendHeader("Content-Encoding", "gzip"));
+        }
+
+        [Fact]
+        public void VeryHeaderIsAcceptEncoding()
+        {
+            response.Verify(r => r.AppendHeader("Vary", "Accept-Encoding"));
+        }
+    }
+
+    public class CompressionSkippedWhenSettingIsFalse_WhenProcessRequest : BundleRequestHandler_Tests
+    {
+        public CompressionSkippedWhenSettingIsFalse_WhenProcessRequest()
+        {
+            CassetteSettings settings = new CassetteSettings() {PerformCompression = false};
+            requestHeaders.Add("Accept-Encoding", "gzip");
+            response.SetupGet(r => r.Filter).Returns(Stream.Null);
+
+            SetupTestBundle(settings);
+
+            var handler = CreateRequestHandler(settings);
+            handler.ProcessRequest("~/test");
+        }
+
+        [Fact]
+        public void ResponseFilterIsGZipStream()
+        {
+            response.VerifySet(r => r.Filter = It.IsAny<GZipStream>(), Times.Never());
         }
 
         [Fact]
