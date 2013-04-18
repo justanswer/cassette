@@ -278,15 +278,15 @@ namespace Cassette.Aspnet
         }
 
         [Fact]
-        public void ResponseFilterIsGZipStream()
+        public void ResponseFilterIsNotSet()
         {
             response.VerifySet(r => r.Filter = It.IsAny<GZipStream>(), Times.Never());
         }
 
         [Fact]
-        public void ContentEncodingHeaderIsGzip()
+        public void ContentEncodingHeaderIsNotSet()
         {
-            response.Verify(r => r.AppendHeader("Content-Encoding", "gzip"));
+            response.Verify(r => r.AppendHeader("Content-Encoding", "gzip"), Times.Never());
         }
 
         [Fact]
