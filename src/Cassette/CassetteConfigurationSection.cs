@@ -38,5 +38,19 @@ namespace Cassette
             get { return (bool)this["performCompression"]; }
             set { this["performCompression"] = value; }
         }
+
+        [ConfigurationProperty("disableFileWatcher", DefaultValue = false)]
+        public bool DisableFileWatcher
+        {
+            get { return (bool) this["disableFileWatcher"]; }
+            set { this["disableFileWatcher"] = value; }
+        }
+
+        [ConfigurationProperty("disableHashCheck", DefaultValue = false)]
+        public bool DisableHashCheck
+        {
+            get { return (bool) this["disableHashCheck"]; }
+            set { this["disableHashCheck"] = value; }
+        }
     }
 }

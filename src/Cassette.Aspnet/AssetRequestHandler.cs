@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Web;
+using System.Web.Configuration;
 using System.Web.Routing;
 using Cassette.Utilities;
 using Trace = Cassette.Diagnostics.Trace;
@@ -9,6 +10,14 @@ namespace Cassette.Aspnet
 {
     class AssetRequestHandler : ICassetteRequestHandler
     {
+        static bool disableHashCheck = false;
+        static AssetRequestHandler()
+        {
+            CassetteConfigurationSection config = (WebConfigurationManager.GetSection("cassette") as CassetteConfigurationSection)
+                  ?? new CassetteConfigurationSection();
+            disableHashCheck = config.DisableHashCheck;
+        }
+        
         public AssetRequestHandler(RequestContext requestContext, BundleCollection bundles)
         {
             this.requestContext = requestContext;
@@ -50,9 +59,9 @@ namespace Cassette.Aspnet
             else {
                 NoCache(response);
             }
-
+            
             var givenETag = request.Headers["If-None-Match"];
-            if (givenETag == actualETag)
+            if (!disableHashCheck && givenETag == actualETag)
             {
                 SendNotModified(response);
             }
